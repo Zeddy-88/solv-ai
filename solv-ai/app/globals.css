@@ -1,0 +1,255 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+@import "tailwindcss";
+
+/* ============================================================
+   UI/UX Agent — Solv AI 디자인 토큰
+   agent.md 섹션 9.5 (디자인 토큰) 기반
+   ============================================================ */
+
+:root {
+  /* Primary Brand */
+  --color-klein: #002FA7;
+  --color-primary: #378ADD;
+  --color-success: #639922;
+  --color-accent: #534AB7;
+  --color-warning: #EF9F27;
+  --color-danger: #E53E3E;
+
+  /* Background (라이트 모드 — mock-up.html 기준) */
+  --color-bg: #F0EFE9;         /* Tertiary Beige */
+  --color-sidebar: #F7F7F5;   /* Sidebar Gray */
+  --color-surface: #FFFFFF;
+  --color-border: rgba(0, 0, 0, 0.08);
+
+  /* Typography */
+  --font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-2xl: 40px;
+
+  /* Shadow */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   Scrollbar (mock-up.html 기준)
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+/* ============================================================
+   Tailwind Custom Utilities (Solv AI 전용)
+   ============================================================ */
+
+@layer utilities {
+  .bg-klein {
+    background-color: var(--color-klein);
+  }
+
+  .text-klein {
+    color: var(--color-klein);
+  }
+
+  .border-klein {
+    border-color: var(--color-klein);
+  }
+
+  .bg-sidebar {
+    background-color: var(--color-sidebar);
+  }
+
+  .bg-dashboard {
+    background-color: var(--color-bg);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-xl-custom {
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Persona 색상 테마 */
+  .persona-blue   { background-color: #EFF6FF; color: #2563EB; }
+  .persona-green  { background-color: #F0FDF4; color: #16A34A; }
+  .persona-purple { background-color: #F5F3FF; color: #7C3AED; }
+  .persona-amber  { background-color: #FFFBEB; color: #D97706; }
+
+  /* 태그 배지 */
+  .tag-urgent  { background-color: #FEF2F2; color: #DC2626; }
+  .tag-asap    { background-color: #FEF2F2; color: #DC2626; }
+  .tag-suggest { background-color: #EFF6FF; color: #2563EB; }
+  .tag-review  { background-color: #F0FDF4; color: #16A34A; }
+
+  /* 진단 등급 색상 */
+  .grade-good  { color: #16A34A; }
+  .grade-ok    { color: #D97706; }
+  .grade-bad   { color: #DC2626; }
+
+  /* 애니메이션 */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-pulse-subtle {
+    animation: pulseSubtle 2s ease-in-out infinite;
+  }
+}
+
+/* ============================================================
+   Keyframe Animations
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ============================================================
+   Skeleton Loader (로딩 상태 UI)
+   ============================================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e6e1 25%,
+    #f0efe9 50%,
+    #e8e6e1 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   Upload Zone
+   ============================================================ */
+
+.upload-zone {
+  border: 2px dashed rgba(0, 47, 167, 0.25);
+  border-radius: var(--radius-xl);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--color-klein);
+  background: rgba(0, 47, 167, 0.04);
+  transform: scale(1.005);
+}
+
+/* ============================================================
+   Card Styles
+   ============================================================ */
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-xl);
+}
+
+/* ============================================================
+   Modal
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  max-width: 42rem;
+}

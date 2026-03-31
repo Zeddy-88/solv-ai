@@ -1,0 +1,8 @@
+solv-ai/node_modules/
+solv-ai/.next/
+solv-ai/.env*
+solv-ai/out/
+solv-ai/build/
+.DS_Store
+*.log
+
