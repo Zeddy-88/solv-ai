@@ -5,7 +5,7 @@ import { Upload, FileText, AlertCircle, Loader2 } from 'lucide-react';
 
 interface UploadZoneProps {
   onAnalysisStart: () => void;
-  onAnalysisSuccess: (data: unknown) => void;
+  onAnalysisSuccess: (data: unknown, meta?: any) => void;
   onAnalysisError: (message: string) => void;
   isAnalyzing: boolean;
 }
@@ -76,7 +76,7 @@ export default function UploadZone({
         return;
       }
 
-      onAnalysisSuccess(json.data);
+      onAnalysisSuccess(json.data, json.meta);
     } catch {
       clearInterval(progressInterval);
       onAnalysisError('네트워크 오류가 발생했습니다. 인터넷 연결을 확인하세요.');

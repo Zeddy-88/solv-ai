@@ -110,7 +110,7 @@ export default function SkeletonLoader() {
 
       {/* 분석 중 메시지 */}
       <div className="text-center py-6">
-        <p className="text-sm text-gray-400 font-medium animate-pulse-subtle">
+        <p className="text-[14px] text-[#9CA3AF] font-medium animate-pulse-subtle">
           AI가 재무제표를 분석하고 있습니다... 잠시만 기다려주세요.
         </p>
       </div>

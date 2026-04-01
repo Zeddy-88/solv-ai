@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeFinancialPDF } from '@/lib/gemini';
+import { createClient } from '@/lib/supabaseServer';
 
 // 보안 Agent 게이트: 파일 크기 제한 (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -53,12 +54,55 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Gemini 2.5 Flash 분석 실행
+    // Gemini 3.1 Pro 분석 실행
     const result = await analyzeFinancialPDF(buffer);
+
+    // [Phase 4] Supabase 데이터 저장 로직
+    let analysisId = null;
+    try {
+      const supabase = await createClient();
+      
+      // 1. 기업 정보 Upsert (회사명 기준)
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .upsert({
+          name: result.company.name,
+          industry: result.company.industry,
+          employees: result.company.employees,
+          founded: result.company.founded,
+          credit_rating: result.company.creditRating,
+          industry_rank: result.company.industryRank,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'name' })
+        .select()
+        .single();
+
+      if (companyError) throw companyError;
+
+      // 2. 분석 결과 저장
+      const { data: analysisData, error: analysisError } = await supabase
+        .from('analyses')
+        .insert({
+          company_id: companyData.id,
+          company_name: result.company.name,
+          result_json: result,
+          is_favorite: false
+        })
+        .select()
+        .single();
+
+      if (analysisError) throw analysisError;
+      analysisId = analysisData.id;
+
+    } catch (dbError) {
+      console.error('[BE Agent] DB 저장 실패 (건너뜀):', dbError);
+      // DB 저장이 실패해도 분석 결과는 반환하여 사용자 경험 유지
+    }
 
     const duration = Date.now() - startTime;
 
     return successResponse(result, {
+      id: analysisId, // Supabase UUID 반환
       duration: `${duration}ms`,
       fileSize: `${(file.size / 1024).toFixed(0)}KB`,
       fileName: file.name,

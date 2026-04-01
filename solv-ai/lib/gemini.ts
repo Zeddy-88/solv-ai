@@ -1,4 +1,4 @@
-// BE Agent — Gemini 2.5 Flash API 클라이언트
+// BE Agent — Gemini 3.1 Pro API 클라이언트
 // agent.md 섹션 9.3 기반
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
@@ -16,7 +16,7 @@ export async function analyzeFinancialPDF(
     throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다.');
   }
 
-  // Gemini 2.5 Flash 멀티모달 모델 초기화
+  // Gemini 3.1 Pro 멀티모달 모델 초기화
   const model = genAI.getGenerativeModel({
     model: 'gemini-3.1-pro-preview',
     generationConfig: {

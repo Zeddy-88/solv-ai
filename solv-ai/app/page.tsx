@@ -7,6 +7,7 @@ import UploadZone from '@/components/UploadZone';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import Dashboard from '@/components/Dashboard';
 import { AnalysisResult, AnalysisStatus } from '@/lib/types';
+import { createClient } from '@/lib/supabase';
 
 // FE Agent — 분석 이력 타입
 interface HistoryItem {
@@ -29,17 +30,41 @@ export default function Home() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 로컬 스토리지 데이터 로드
+  // DB 및 로컬 스토리지 데이터 로드
   useEffect(() => {
-    const saved = localStorage.getItem('solv_ai_history');
-    if (saved) {
-      try {
-        setHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to load history', e);
+    const fetchHistory = async () => {
+      const supabase = createClient();
+      const { data: dbData, error: dbError } = await supabase
+        .from('analyses')
+        .select('id, company_name, created_at, is_favorite, result_json')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!dbError && dbData) {
+        const formatted: HistoryItem[] = dbData.map(item => ({
+          id: item.id,
+          companyName: item.company_name,
+          date: new Date(item.created_at).toLocaleDateString() === new Date().toLocaleDateString() ? '오늘' : item.created_at.split('T')[0],
+          status: 'done', // 초기 로드 시에는 모두 done 상태
+          isFavorite: item.is_favorite,
+          data: item.result_json as AnalysisResult,
+        }));
+        setHistory(formatted);
+      } else {
+        // DB 로드 실패 시 로컬 스토리지 백업 시도
+        const saved = localStorage.getItem('solv_ai_history');
+        if (saved) {
+          try {
+            setHistory(JSON.parse(saved));
+          } catch (e) {
+            console.error('Failed to load local history', e);
+          }
+        }
       }
-    }
-    setIsLoaded(true);
+      setIsLoaded(true);
+    };
+
+    fetchHistory();
   }, []);
 
   // 로컬 스토리지 데이터 저장
@@ -58,9 +83,9 @@ export default function Home() {
   }, []);
 
   // Orchestration: BE Agent로부터 성공 응답 수신
-  const handleAnalysisSuccess = useCallback((data: unknown) => {
+  const handleAnalysisSuccess = useCallback((data: unknown, meta?: any) => {
     const result = data as AnalysisResult;
-    const newId = Date.now().toString();
+    const newId = meta?.id || Date.now().toString(); // DB UUID 우선 사용
 
     setCurrentId(newId);
     setCurrentResult(result);
@@ -106,11 +131,26 @@ export default function Home() {
   }, [history]);
 
   // Orchestration: 즐겨찾기 토글
-  const handleToggleFavorite = useCallback((id: string) => {
+  const handleToggleFavorite = useCallback(async (id: string) => {
+    const item = history.find(h => h.id === id);
+    if (!item) return;
+
+    const newFavoriteStatus = !item.isFavorite;
+
+    // UI 즉시 업데이트 (Optimistic Update)
     setHistory(prev => prev.map(item =>
-      item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
+      item.id === id ? { ...item, isFavorite: newFavoriteStatus } : item
     ));
-  }, []);
+
+    // Supabase 연동 (UUID 형식인 경우에만 수행)
+    if (id.includes('-')) {
+      const supabase = createClient();
+      await supabase
+        .from('analyses')
+        .update({ is_favorite: newFavoriteStatus })
+        .eq('id', id);
+    }
+  }, [history]);
 
   // Orchestration: 새 분석 시작
   const handleNewAnalysis = useCallback(() => {
@@ -120,6 +160,15 @@ export default function Home() {
     setErrorMessage(null);
     setHistory(prev => prev.map(h => h.status === 'active' ? { ...h, status: 'done' as const } : h));
   }, []);
+
+  // Orchestration: 공유 링크 복사
+  const handleShare = useCallback(() => {
+    if (!currentId) return;
+    const shareUrl = `${window.location.origin}/share/${currentId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('분석 결과 공유 링크가 클립보드에 복사되었습니다.');
+    });
+  }, [currentId]);
 
   // 사이드바 이력 타입 변환
   const sidebarHistory = history.map(h => ({
@@ -183,7 +232,8 @@ export default function Home() {
               )}
             </div>
             <button 
-              className="p-2.5 rounded-xl border border-black/10 text-gray-400 hover:bg-gray-50 hover:text-klein transition-all shadow-sm"
+              onClick={handleShare}
+              className="p-2.5 rounded-xl border border-[#0000001A] text-[#9CA3AF] hover:bg-[#F9FAFB] hover:text-[#002FA7] transition-all shadow-sm"
               title="분석 이력 공유"
             >
               <Share2 className="w-5 h-5" />
@@ -234,6 +284,7 @@ export default function Home() {
               isFavorite={currentIsFavorite}
               onToggleFavorite={() => currentId && handleToggleFavorite(currentId)}
               onReset={handleNewAnalysis}
+              onShare={handleShare}
             />
           )}
 

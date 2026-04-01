@@ -107,7 +107,13 @@ export function buildMasterPrompt(): string {
     "profitability": "양호|보통|보통이하",
     "financialStructure": "양호|보통|보통이하",
     "debtRepayment": "양호|보통|보통이하",
-    "activity": "양호|보통|보통이하"
+    "activity": "양호|보통|보통이하",
+    "interestCoverage": "양호|보통|보통이하",
+    "liquidity": "양호|보통|보통이하",
+    "costRatio": "양호|보통|보통이하",
+    "personnelCost": "양호|보통|보통이하",
+    "accountsReceivable": "양호|보통|보통이하",
+    "capitalEfficiency": "양호|보통|보통이하"
   },
   "summary": {
     "headline": "string",

@@ -9,7 +9,7 @@
 | 항목 | 내용 |
 |---|---|
 | 에이전트명 | Solv AI Analysis Engine |
-| AI 모델 | Gemini 2.5 Flash (멀티모달) |
+| AI 모델 | Gemini 3.1 Pro (멀티모달) |
 | 주요 입력 | 법인 재무제표 PDF (최대 50MB) |
 | 주요 출력 | 재무 진단, 4인 페르소나 분석, 영업 스크립트, 제안 시나리오 |
 | 언어 | 한국어 우선 (수치/지표는 영문 병기 허용) |
@@ -24,7 +24,7 @@
 ```
 [PDF 업로드]
      ↓
-[멀티모달 파싱] — Gemini 2.5 Flash Vision
+[멀티모달 파싱] — Gemini 3.1 Pro Vision
      ↓
 [재무 데이터 추출]
   - 3개년 매출/영업이익/순이익
@@ -445,7 +445,7 @@ Orchestration Agent로부터 서브태스크 수신 시:
 | 에이전트명 | `solv-be-agent` |
 | 역할 | API 설계, Gemini AI 연동, 비즈니스 로직 구현 |
 | 권한 레벨 | Level 2 |
-| 담당 기술 스택 | Next.js API Routes, Gemini 2.5 Flash, LangChain, Supabase |
+| 담당 기술 스택 | Next.js API Routes, Gemini 3.1 Pro, LangChain, Supabase |
 | 보고 대상 | Orchestration Agent → PM Agent |
 
 **핵심 책임**:
@@ -455,7 +455,7 @@ be_responsibilities:
     - RESTful API 엔드포인트 설계 및 문서화 (OpenAPI 3.0)
     - 요청 유효성 검사 및 에러 핸들링 표준화
   ai_integration:
-    - Gemini 2.5 Flash 멀티모달 API 연동
+    - Gemini 3.1 Pro 멀티모달 API 연동
     - 4인 페르소나 병렬 프롬프트 실행 (Promise.all)
     - 토큰 사용량 최적화 및 비용 모니터링
   business_logic:

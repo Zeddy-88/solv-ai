@@ -95,11 +95,11 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
             </div>
             <div className="px-3 space-y-0.5">
               {favorites.map(item => (
-                <button
+                <div
                   key={item.id}
                   onClick={() => onSelectHistory(item.id)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                             hover:bg-white transition-colors group text-left"
+                             hover:bg-white transition-colors group text-left cursor-pointer"
                 >
                   <div className="w-7 h-7 rounded-lg bg-yellow-50 flex items-center justify-center
                                   text-[11px] font-black text-yellow-600 flex-shrink-0">
@@ -115,7 +115,7 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
                       onToggleFavorite(item.id);
                     }}
                   />
-                </button>
+                </div>
               ))}
             </div>
             <div className="h-px bg-black/10 mx-5 my-2" />
@@ -141,11 +141,11 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
             </div>
           ) : (
             recents.map(item => (
-              <button
+              <div
                 key={item.id}
                 onClick={() => onSelectHistory(item.id)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                           hover:bg-white transition-colors group text-left"
+                           hover:bg-white transition-colors group text-left cursor-pointer"
               >
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusColor(item.status)}`} />
                 <div className="flex-1 min-w-0">
@@ -162,7 +162,7 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
                   <Star className="w-3.5 h-3.5" />
                 </button>
                 <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
-              </button>
+              </div>
             ))
           )}
         </div>

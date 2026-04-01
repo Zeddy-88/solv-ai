@@ -31,6 +31,12 @@ export interface Diagnosis {
   financialStructure: DiagnosisGrade;
   debtRepayment: DiagnosisGrade;
   activity: DiagnosisGrade;
+  interestCoverage: DiagnosisGrade;
+  liquidity: DiagnosisGrade;
+  costRatio: DiagnosisGrade;
+  personnelCost: DiagnosisGrade;
+  accountsReceivable: DiagnosisGrade;
+  capitalEfficiency: DiagnosisGrade;
 }
 
 export interface Summary {

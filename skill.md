@@ -106,7 +106,7 @@ transition: transform 300ms ease-in-out;
 
 ## 2. AI / 멀티모달 (AI & Multimodal)
 
-### 2.1 Gemini 2.5 Flash API
+### 2.1 Gemini 3.1 Pro API
 
 ```javascript
 // 멀티모달 PDF 분석 요청 구조
@@ -117,7 +117,7 @@ const response = await fetch('/api/analyze', {
 
 // Gemini API 호출 파라미터
 {
-  model: "gemini-2.5-flash",
+  model: "gemini-3.1-pro-preview", // 또는 gemini-3.1-pro
   generationConfig: {
     responseMimeType: "application/json",
     temperature: 0.3,   // 분석 일관성 위해 낮게 설정
