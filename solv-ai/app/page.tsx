@@ -205,99 +205,100 @@ export default function Home() {
 
       {/* 메인 콘텐츠 영역 */}
       <div className="flex-1 flex flex-col overflow-hidden">
-
-        {/* 모바일 TopBar */}
-        <header className="lg:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-black/10 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-xl bg-klein flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white fill-white" />
+        <div className="max-w-[1080px] mx-auto w-full h-full flex flex-col overflow-hidden bg-white shadow-xl">
+          {/* 모바일 TopBar */}
+          <header className="lg:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-black/10 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-xl bg-klein flex items-center justify-center">
+                <Zap className="w-3.5 h-3.5 text-white fill-white" />
+              </div>
+              <span className="text-[15px] font-black text-gray-900">Solv AI</span>
             </div>
-            <span className="text-[15px] font-black text-gray-900">Solv AI</span>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="메뉴 열기"
-          >
-            <Menu className="w-5 h-5 text-gray-600" />
-          </button>
-        </header>
-
-        {/* 데스크톱 헤더 — 분석 완료 시 회사명 표시 */}
-        {currentResult && (
-          <header className="hidden lg:flex h-16 bg-white border-b border-black/10 items-center justify-between px-8 shrink-0">
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-black text-gray-900">{currentResult.company.name}</h2>
-              {currentResult.company.creditRating && (
-                <span className="px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-xs font-black">
-                  {currentResult.company.creditRating}
-                </span>
-              )}
-              {currentResult.company.industryRank && (
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-xs font-black">
-                  업계 {currentResult.company.industryRank}
-                </span>
-              )}
-            </div>
-            <button 
-              onClick={handleShare}
-              className="p-2.5 rounded-xl border border-[#0000001A] text-[#9CA3AF] hover:bg-[#F9FAFB] hover:text-[#002FA7] transition-all shadow-sm"
-              title="분석 이력 공유"
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="메뉴 열기"
             >
-              <Share2 className="w-5 h-5" />
+              <Menu className="w-5 h-5 text-gray-600" />
             </button>
           </header>
-        )}
 
-        {/* 스크롤 영역 */}
-        <main className="flex-1 overflow-y-auto">
+          {/* 데스크톱 헤더 — 분석 완료 시 회사명 표시 */}
+          {currentResult && (
+            <header className="hidden lg:flex h-16 bg-white border-b border-black/10 items-center justify-between px-8 shrink-0">
+              <div className="flex items-center gap-4">
+                <h2 className="text-lg font-black text-gray-900">{currentResult.company.name}</h2>
+                {currentResult.company.creditRating && (
+                  <span className="px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-xs font-black">
+                    {currentResult.company.creditRating}
+                  </span>
+                )}
+                {currentResult.company.industryRank && (
+                  <span className="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-xs font-black">
+                    업계 {currentResult.company.industryRank}
+                  </span>
+                )}
+              </div>
+              <button 
+                onClick={handleShare}
+                className="p-2.5 rounded-xl border border-[#0000001A] text-[#9CA3AF] hover:bg-[#F9FAFB] hover:text-[#002FA7] transition-all shadow-sm"
+                title="분석 이력 공유"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
+            </header>
+          )}
 
-          {/* 상태 라우팅 — Orchestration Agent 핵심 로직 */}
+          {/* 스크롤 영역 */}
+          <main className="flex-1 overflow-y-auto">
 
-          {/* 상태 1: 유휴 — PDF 업로드 화면 */}
-          {(analysisStatus === 'idle' || analysisStatus === 'error') && (
-            <div>
-              <UploadZone
-                onAnalysisStart={handleAnalysisStart}
-                onAnalysisSuccess={handleAnalysisSuccess}
-                onAnalysisError={handleAnalysisError}
-                isAnalyzing={false}
-              />
+            {/* 상태 라우팅 — Orchestration Agent 핵심 로직 */}
 
-              {/* 에러 메시지 */}
-              {analysisStatus === 'error' && errorMessage && (
-                <div className="max-w-2xl mx-auto px-8 pb-8">
-                  <div className="p-5 bg-red-50 rounded-3xl border border-red-100">
-                    <p className="text-sm font-black text-red-800 mb-1">⚠️ 분석 실패</p>
-                    <p className="text-sm text-red-700 font-medium">{errorMessage}</p>
-                    <button
-                      onClick={handleNewAnalysis}
-                      className="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-xl text-sm font-bold hover:bg-red-200 transition-colors"
-                    >
-                      다시 시도
-                    </button>
+            {/* 상태 1: 유휴 — PDF 업로드 화면 */}
+            {(analysisStatus === 'idle' || analysisStatus === 'error') && (
+              <div>
+                <UploadZone
+                  onAnalysisStart={handleAnalysisStart}
+                  onAnalysisSuccess={handleAnalysisSuccess}
+                  onAnalysisError={handleAnalysisError}
+                  isAnalyzing={false}
+                />
+
+                {/* 에러 메시지 */}
+                {analysisStatus === 'error' && errorMessage && (
+                  <div className="max-w-2xl mx-auto px-8 pb-8">
+                    <div className="p-5 bg-red-50 rounded-3xl border border-red-100">
+                      <p className="text-sm font-black text-red-800 mb-1">⚠️ 분석 실패</p>
+                      <p className="text-sm text-red-700 font-medium">{errorMessage}</p>
+                      <button
+                        onClick={handleNewAnalysis}
+                        className="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-xl text-sm font-bold hover:bg-red-200 transition-colors"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          {/* 상태 2: 분석 중 — 스켈레톤 로더 */}
-          {analysisStatus === 'analyzing' && <SkeletonLoader />}
+            {/* 상태 2: 분석 중 — 스켈레톤 로더 */}
+            {analysisStatus === 'analyzing' && <SkeletonLoader />}
 
-          {/* 상태 3: 완료 — 결과 대시보드 */}
-          {analysisStatus === 'done' && currentResult && (
-            <Dashboard
-              id={currentId}
-              data={currentResult}
-              isFavorite={currentIsFavorite}
-              onToggleFavorite={() => currentId && handleToggleFavorite(currentId)}
-              onReset={handleNewAnalysis}
-              onShare={handleShare}
-            />
-          )}
+            {/* 상태 3: 완료 — 결과 대시보드 */}
+            {analysisStatus === 'done' && currentResult && (
+              <Dashboard
+                id={currentId}
+                data={currentResult}
+                isFavorite={currentIsFavorite}
+                onToggleFavorite={() => currentId && handleToggleFavorite(currentId)}
+                onReset={handleNewAnalysis}
+                onShare={handleShare}
+              />
+            )}
 
-        </main>
+          </main>
+        </div>
       </div>
     </div>
   );

@@ -82,6 +82,7 @@ export default function SharePage() {
       <main className="flex-1 overflow-y-auto">
         {/* 읽기 전용 대시보드 — 즐겨찾기/리셋 기능 비활성화 */}
         <Dashboard 
+          id={params.token as string}
           data={data} 
           isFavorite={false} 
           onToggleFavorite={() => {}} 

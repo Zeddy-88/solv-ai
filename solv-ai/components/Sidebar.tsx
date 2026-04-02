@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Plus, Search, Star, Settings, Zap, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,6 +19,13 @@ export default function Sidebar({
   isOpen, onClose, onNewAnalysis, history, onSelectHistory, onToggleFavorite,
   searchQuery, onSearchChange 
 }: SidebarProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 컴포넌트 마운트 확인 (Hydration Error 방지)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // 모바일 바디 스크롤 방지
   useEffect(() => {
     if (isOpen && window.innerWidth < 1024) {
@@ -36,6 +43,8 @@ export default function Sidebar({
     if (status === 'active')   return 'bg-[#378ADD]';
     return 'bg-[#639922]'; // 'done'
   };
+
+  if (!isMounted) return null;
 
   return (
     <>

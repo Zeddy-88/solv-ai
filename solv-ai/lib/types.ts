@@ -25,18 +25,23 @@ export interface FinancialData {
 
 export type DiagnosisGrade = '양호' | '보통' | '보통이하';
 
+export interface DiagnosisItem {
+  grade: DiagnosisGrade;
+  value: string; // e.g. "12.5%", "1.5회"
+}
+
 export interface Diagnosis {
-  growth: DiagnosisGrade;
-  profitability: DiagnosisGrade;
-  financialStructure: DiagnosisGrade;
-  debtRepayment: DiagnosisGrade;
-  activity: DiagnosisGrade;
-  interestCoverage: DiagnosisGrade;
-  liquidity: DiagnosisGrade;
-  costRatio: DiagnosisGrade;
-  personnelCost: DiagnosisGrade;
-  accountsReceivable: DiagnosisGrade;
-  capitalEfficiency: DiagnosisGrade;
+  growth: DiagnosisItem;
+  profitability: DiagnosisItem;
+  financialStructure: DiagnosisItem;
+  debtRepayment: DiagnosisItem;
+  activity: DiagnosisItem;
+  interestCoverage: DiagnosisItem;
+  liquidity: DiagnosisItem;
+  costRatio: DiagnosisItem;
+  personnelCost: DiagnosisItem;
+  accountsReceivable: DiagnosisItem;
+  capitalEfficiency: DiagnosisItem;
 }
 
 export interface Summary {

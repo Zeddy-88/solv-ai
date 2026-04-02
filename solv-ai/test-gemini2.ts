@@ -26,7 +26,7 @@ async function main() {
     console.log("Sending request to Gemini...");
     const result = await model.generateContent([{text: "경림전기(주) 재무 데이터 가짜로 만들어서 분석해줘."}, {text: prompt}]);
     
-    console.log("Finish reason:", result.response.candidates[0].finishReason);
+    console.log("Finish reason:", result.response.candidates?.[0]?.finishReason);
     
     const text = result.response.text();
     console.log("Response text length:", text.length);
@@ -34,7 +34,7 @@ async function main() {
     
     JSON.parse(text);
     console.log("Parsed perfectly!");
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error:", err.message);
   }
 }

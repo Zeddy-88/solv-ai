@@ -22,6 +22,7 @@ export function buildMasterPrompt(): string {
 - 재무구조: 부채비율 < 100% = 양호, 100~200% = 보통, > 200% = 보통이하
 - 부채상환: 이자보상배수 > 5 = 양호, 2~5 = 보통, < 2 = 보통이하
 - 활동성: 매출채권 회전일 < 30일 = 양호, 30~60일 = 보통, > 60일 = 보통이하
+- 중요: 모든 진단 항목은 'grade' 뿐만 아니라 해당 근거가 되는 구체적인 수치(예: "15.4%", "1.2회", "45일")를 'value' 필드에 포함하세요. 이때 "부채비율 150%"와 같이 항목명을 중복해서 쓰지 말고 숫자와 단위만 깔끔하게 적으세요.
 
 ### 3단계: 4인 전문가 페르소나 분석 (각각 독립적으로)
 
@@ -103,17 +104,17 @@ export function buildMasterPrompt(): string {
     ]
   },
   "diagnosis": {
-    "growth": "양호|보통|보통이하",
-    "profitability": "양호|보통|보통이하",
-    "financialStructure": "양호|보통|보통이하",
-    "debtRepayment": "양호|보통|보통이하",
-    "activity": "양호|보통|보통이하",
-    "interestCoverage": "양호|보통|보통이하",
-    "liquidity": "양호|보통|보통이하",
-    "costRatio": "양호|보통|보통이하",
-    "personnelCost": "양호|보통|보통이하",
-    "accountsReceivable": "양호|보통|보통이하",
-    "capitalEfficiency": "양호|보통|보통이하"
+    "growth": { "grade": "양호|보통|보통이하", "value": "string" },
+    "profitability": { "grade": "양호|보통|보통이하", "value": "string" },
+    "financialStructure": { "grade": "양호|보통|보통이하", "value": "string" },
+    "debtRepayment": { "grade": "양호|보통|보통이하", "value": "부채상환계수(DSCR) 등" },
+    "activity": { "grade": "양호|보통|보통이하", "value": "매출채권회전일 등" },
+    "interestCoverage": { "grade": "양호|보통|보통이하", "value": "이자보상배수" },
+    "liquidity": { "grade": "양호|보통|보통이하", "value": "유동비율" },
+    "costRatio": { "grade": "양호|보통|보통이하", "value": "매출원가율" },
+    "personnelCost": { "grade": "양호|보통|보통이하", "value": "매출액 대비 인건비율" },
+    "accountsReceivable": { "grade": "양호|보통|보통이하", "value": "채권 회전일/회수기간" },
+    "capitalEfficiency": { "grade": "양호|보통|보통이하", "value": "자기자본이익률(ROE)" }
   },
   "summary": {
     "headline": "string",
