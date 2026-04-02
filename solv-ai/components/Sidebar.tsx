@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { X, Plus, Search, Star, Settings, Zap, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
@@ -9,10 +10,25 @@ interface SidebarProps {
   history: Array<{ id: string; companyName: string; date: string; status: 'active' | 'done'; isFavorite: boolean }>;
   onSelectHistory: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 // FE Agent — 사이드바 컴포넌트
-export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSelectHistory, onToggleFavorite }: SidebarProps) {
+export default function Sidebar({ 
+  isOpen, onClose, onNewAnalysis, history, onSelectHistory, onToggleFavorite,
+  searchQuery, onSearchChange 
+}: SidebarProps) {
+  // 모바일 바디 스크롤 방지
+  useEffect(() => {
+    if (isOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   const favorites = history.filter(h => h.isFavorite);
   const recents = history.filter(h => !h.isFavorite);
 
@@ -74,13 +90,21 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
           </button>
         </div>
 
-        {/* 검색 버튼 */}
+        {/* 분석 이력 검색 */}
         <div className="px-4 pb-2">
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl
-                             text-gray-500 hover:bg-white transition-colors text-[13px] font-medium">
-            <Search className="w-4 h-4" />
-            분석 이력 검색
-          </button>
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 
+                              group-focus-within:text-klein transition-colors" />
+            <input 
+              type="text"
+              placeholder="기업명 검색..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white/50 border border-black/5 rounded-xl text-[13px] 
+                         focus:outline-none focus:ring-2 focus:ring-klein/10 focus:bg-white 
+                         placeholder:text-gray-400 transition-all"
+            />
+          </div>
         </div>
 
         <div className="h-px bg-black/10 mx-5 my-2" />
@@ -97,19 +121,19 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
               {favorites.map(item => (
                 <div
                   key={item.id}
-                  onClick={() => onSelectHistory(item.id)}
+                  onClick={() => { onSelectHistory(item.id); onClose(); }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                              hover:bg-white transition-colors group text-left cursor-pointer"
                 >
                   <div className="w-7 h-7 rounded-lg bg-yellow-50 flex items-center justify-center
-                                  text-[11px] font-black text-yellow-600 flex-shrink-0">
+                                  text-[11px] font-black text-yellow-600 shrink-0">
                     {item.companyName.charAt(0)}
                   </div>
                   <span className="text-[13px] font-medium text-gray-700 truncate flex-1">
                     {item.companyName}
                   </span>
                   <Star
-                    className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400 flex-shrink-0 cursor-pointer hover:scale-110 transition-transform"
+                    className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400 shrink-0 cursor-pointer hover:scale-110 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleFavorite(item.id);
@@ -143,11 +167,11 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
             recents.map(item => (
               <div
                 key={item.id}
-                onClick={() => onSelectHistory(item.id)}
+                onClick={() => { onSelectHistory(item.id); onClose(); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                            hover:bg-white transition-colors group text-left cursor-pointer"
               >
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusColor(item.status)}`} />
+                <div className={`w-2 h-2 rounded-full shrink-0 ${statusColor(item.status)}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-gray-700 truncate">{item.companyName}</p>
                   <p className="text-[11px] text-gray-400">{item.date}</p>
@@ -161,7 +185,7 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
                 >
                   <Star className="w-3.5 h-3.5" />
                 </button>
-                <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-400 shrink-0" />
               </div>
             ))
           )}
@@ -170,7 +194,7 @@ export default function Sidebar({ isOpen, onClose, onNewAnalysis, history, onSel
         {/* 사용자 프로필 (하단 고정) */}
         <div className="border-t border-black/10 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-klein flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-klein flex items-center justify-center shrink-0">
               <span className="text-white text-[11px] font-black">S</span>
             </div>
             <div className="flex-1 min-w-0">

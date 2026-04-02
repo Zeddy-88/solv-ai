@@ -29,6 +29,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // DB 및 로컬 스토리지 데이터 로드
   useEffect(() => {
@@ -170,8 +171,13 @@ export default function Home() {
     });
   }, [currentId]);
 
+  // 검색 필터링된 이력
+  const filteredHistory = history.filter(item => 
+    item.companyName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // 사이드바 이력 타입 변환
-  const sidebarHistory = history.map(h => ({
+  const sidebarHistory = filteredHistory.map(h => ({
     id: h.id,
     companyName: h.companyName,
     date: h.date,
@@ -193,13 +199,15 @@ export default function Home() {
         history={sidebarHistory}
         onSelectHistory={handleSelectHistory}
         onToggleFavorite={handleToggleFavorite}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       {/* 메인 콘텐츠 영역 */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* 모바일 TopBar */}
-        <header className="lg:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-black/10 flex-shrink-0">
+        <header className="lg:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-black/10 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-xl bg-klein flex items-center justify-center">
               <Zap className="w-3.5 h-3.5 text-white fill-white" />
@@ -217,7 +225,7 @@ export default function Home() {
 
         {/* 데스크톱 헤더 — 분석 완료 시 회사명 표시 */}
         {currentResult && (
-          <header className="hidden lg:flex h-16 bg-white border-b border-black/10 items-center justify-between px-8 flex-shrink-0">
+          <header className="hidden lg:flex h-16 bg-white border-b border-black/10 items-center justify-between px-8 shrink-0">
             <div className="flex items-center gap-4">
               <h2 className="text-lg font-black text-gray-900">{currentResult.company.name}</h2>
               {currentResult.company.creditRating && (
@@ -280,6 +288,7 @@ export default function Home() {
           {/* 상태 3: 완료 — 결과 대시보드 */}
           {analysisStatus === 'done' && currentResult && (
             <Dashboard
+              id={currentId}
               data={currentResult}
               isFavorite={currentIsFavorite}
               onToggleFavorite={() => currentId && handleToggleFavorite(currentId)}

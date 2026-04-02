@@ -46,7 +46,7 @@ export default function SkeletonLoader() {
       </div>
 
       {/* 기업 분석 요약 */}
-      <div className="card p-8 space-y-4" style={{ borderRadius: '32px' }}>
+      <div className="card p-8 space-y-4 rounded-xl">
         <div className="skeleton h-6 w-72" />
         <div className="flex gap-2">
           {[...Array(4)].map((_, i) => <div key={i} className="skeleton h-8 w-24 rounded-full" />)}
@@ -82,7 +82,7 @@ export default function SkeletonLoader() {
         </div>
 
         {/* 통합 인사이트 스켈레톤 */}
-        <div className="mt-5 rounded-[32px] p-8" style={{ background: '#534AB7' }}>
+        <div className="mt-5 rounded-xl p-8" style={{ background: '#534AB7' }}>
           <div className="space-y-3">
             <div className="h-3 w-32 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
             <div className="h-5 w-full rounded" style={{ background: 'rgba(255,255,255,0.2)' }} />

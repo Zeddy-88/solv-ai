@@ -1,6 +1,22 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
 @import "tailwindcss";
 
+@theme {
+  /* Tailwind v4 — Sync radius with modified design tokens */
+  --radius-xs: 1px;
+  --radius-sm: 3px;
+  --radius: 4px; /* default rounded */
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;  /* rounded-xl halved from 24px? No, xl was 12px in default? 
+                        Wait, standard xl is 0.75rem (12px). Halved is 6px.
+                        But project's --radius-xl was 32px!
+                        So I'll follow the project's scale. */
+  --radius-xl: 16px;  /* halved from project's 32px */
+  --radius-2xl: 20px; /* halved from project's 40px */
+  --radius-3xl: 12px; /* halved from standard 24px (used in Dashboard.tsx) */
+}
+
 /* ============================================================
    UI/UX Agent — Solv AI 디자인 토큰
    agent.md 섹션 9.5 (디자인 토큰) 기반
@@ -24,12 +40,12 @@
   /* Typography */
   --font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 32px;
-  --radius-2xl: 40px;
+  /* Radius (Halved by 50% as requested) */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
 
   /* Shadow */
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
@@ -72,7 +88,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #d1d1d1;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

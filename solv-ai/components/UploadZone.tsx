@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, FileText, AlertCircle, Loader2 } from 'lucide-react';
 
 interface UploadZoneProps {
@@ -22,6 +22,15 @@ export default function UploadZone({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationError, setValidationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 분석 상태가 아닐 때 내부 상태 초기화 (Phase 5)
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setSelectedFile(null);
+      setUploadProgress(0);
+      setValidationError(null);
+    }
+  }, [isAnalyzing]);
 
   // 보안 Agent 게이트: 파일 유효성 검사 (클라이언트 측)
   const validateFile = (file: File): string | null => {
@@ -202,7 +211,7 @@ export default function UploadZone({
         {/* 유효성 오류 */}
         {validationError && (
           <div className="mt-4 flex items-center gap-3 p-4 bg-red-50 rounded-2xl border border-red-100 animate-fade-in">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
             <p className="text-sm font-bold text-red-700">{validationError}</p>
           </div>
         )}
