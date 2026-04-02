@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Menu, Zap, Share2 } from 'lucide-react';
+import { Menu, Zap, Share2, Download } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import UploadZone from '@/components/UploadZone';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import Dashboard from '@/components/Dashboard';
 import { AnalysisResult, AnalysisStatus } from '@/lib/types';
 import { createClient } from '@/lib/supabase';
+import { getUser, getProfile, signOut } from '@/lib/auth';
+import { AuthModal, CreditModal } from '@/components/AuthComponents';
 
 // FE Agent — 분석 이력 타입
 interface HistoryItem {
@@ -30,6 +32,12 @@ export default function Home() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Phase 9: 유저 및 크레딧 상태
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
   // DB 및 로컬 스토리지 데이터 로드
   useEffect(() => {
@@ -65,7 +73,17 @@ export default function Home() {
       setIsLoaded(true);
     };
 
+    const fetchUser = async () => {
+      const userData = await getUser();
+      setUser(userData);
+      if (userData) {
+        const profileData = await getProfile();
+        setProfile(profileData);
+      }
+    };
+
     fetchHistory();
+    fetchUser();
   }, []);
 
   // 로컬 스토리지 데이터 저장
@@ -111,9 +129,29 @@ export default function Home() {
 
   // Orchestration: 에러 이벤트 처리 및 에스컬레이션
   const handleAnalysisError = useCallback((message: string) => {
+    // Phase 9: 크레딧 부족 에러 캐칭
+    if (message.includes('크레딧이 부족') || message.includes('INSUFFICIENT_CREDITS')) {
+      setAnalysisStatus('idle'); // 업로드 화면으로 유지하며 모달 띄움
+      setIsCreditModalOpen(true);
+      return;
+    }
+    
+    // Phase 9: 권한 에러 (로그인 해제 등)
+    if (message.includes('로그인') || message.includes('UNAUTHORIZED')) {
+      setAnalysisStatus('idle');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     setAnalysisStatus('error');
     setErrorMessage(message);
-    console.error('[Orchestrator] 분석 오류 수신:', message);
+    
+    // 운영 안정화: 상세 에러 로깅 (Sentry/LogDrain 연동 준비)
+    console.error('[Orchestrator] 분석 처리 오류:', {
+      timestamp: new Date().toISOString(),
+      error: message,
+      context: 'PDF Analysis Pipeline'
+    });
   }, []);
 
   // Orchestration: 이력 선택
@@ -201,6 +239,11 @@ export default function Home() {
         onToggleFavorite={handleToggleFavorite}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        user={user}
+        profile={profile}
+        onLogin={() => setIsAuthModalOpen(true)}
+        onLogout={signOut}
+        onOpenPayment={() => setIsCreditModalOpen(true)}
       />
 
       {/* 메인 콘텐츠 영역 */}
@@ -239,13 +282,30 @@ export default function Home() {
                   </span>
                 )}
               </div>
-              <button 
-                onClick={handleShare}
-                className="p-2.5 rounded-xl border border-[#0000001A] text-[#9CA3AF] hover:bg-[#F9FAFB] hover:text-[#002FA7] transition-all shadow-sm"
-                title="분석 이력 공유"
-              >
-                <Share2 className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const dashboard = document.getElementById('analysis-dashboard');
+                    if (dashboard && currentResult) {
+                      const { generatePDF } = require('@/lib/reportGenerator');
+                      generatePDF('analysis-dashboard', `SolvAI_Report_${currentResult.company.name}`);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#0000001A] text-[#6B7280] hover:bg-[#F9FAFB] hover:text-klein transition-all shadow-sm"
+                  title="PDF 리포트 다운로드"
+                >
+                  <Download className="w-5 h-5" />
+                  <span className="hidden xl:inline text-xs font-black">리포트 다운로드</span>
+                </button>
+                <div className="w-px h-6 bg-gray-200 mx-1"></div>
+                <button 
+                  onClick={handleShare}
+                  className="p-2.5 rounded-xl border border-[#0000001A] text-[#9CA3AF] hover:bg-[#F9FAFB] hover:text-[#002FA7] transition-all shadow-sm"
+                  title="분석 이력 공유"
+                >
+                  <Share2 className="w-5 h-5" />
+                </button>
+              </div>
             </header>
           )}
 
@@ -262,6 +322,8 @@ export default function Home() {
                   onAnalysisSuccess={handleAnalysisSuccess}
                   onAnalysisError={handleAnalysisError}
                   isAnalyzing={false}
+                  user={user}
+                  onLoginRequired={() => setIsAuthModalOpen(true)}
                 />
 
                 {/* 에러 메시지 */}
@@ -300,6 +362,16 @@ export default function Home() {
           </main>
         </div>
       </div>
+
+      {/* Phase 9: 인증 및 결제 모달 */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
+      <CreditModal 
+        isOpen={isCreditModalOpen} 
+        onClose={() => setIsCreditModalOpen(false)} 
+      />
     </div>
   );
 }

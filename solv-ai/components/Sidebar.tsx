@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Plus, Search, Star, Settings, Zap, ChevronRight } from 'lucide-react';
+import { X, Plus, Search, Star, Settings, Zap, ChevronRight, LogIn, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,12 +13,17 @@ interface SidebarProps {
   onToggleFavorite: (id: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  user: any;
+  profile: any;
+  onLogin: () => void;
+  onLogout: () => void;
+  onOpenPayment: () => void;
 }
 
 // FE Agent — 사이드바 컴포넌트
 export default function Sidebar({ 
   isOpen, onClose, onNewAnalysis, history, onSelectHistory, onToggleFavorite,
-  searchQuery, onSearchChange 
+  searchQuery, onSearchChange, user, profile, onLogin, onLogout, onOpenPayment
 }: SidebarProps) {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -201,19 +207,69 @@ export default function Sidebar({
         </div>
 
         {/* 사용자 프로필 (하단 고정) */}
-        <div className="border-t border-black/10 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-klein flex items-center justify-center shrink-0">
-              <span className="text-white text-[11px] font-black">S</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-gray-800 truncate">사용자</p>
-              <p className="text-[11px] text-gray-400">영업 담당자</p>
-            </div>
-            <button className="p-1.5 rounded-lg hover:bg-black/5 transition-colors">
-              <Settings className="w-4 h-4 text-gray-400" />
+        <div className="border-t border-black/10 px-4 py-4 bg-white/50 backdrop-blur-sm">
+          {!user ? (
+            <button
+              onClick={onLogin}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gray-900 text-white rounded-xl font-bold text-[13px] hover:bg-black transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              로그인하여 시작하기
             </button>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <div 
+                onClick={onOpenPayment}
+                className="flex items-center justify-between px-3 py-2 bg-klein/5 border border-klein/10 rounded-xl cursor-pointer hover:bg-klein/10 transition-all group"
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-klein fill-klein shrink-0" />
+                  <span className="text-[12px] font-black text-klein">보유 포인트</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-right">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[14px] font-black text-klein leading-tight">{profile?.credits || 0}P</span>
+                    <span className="text-[9px] font-bold text-klein/60 leading-tight">약 {Math.floor((profile?.credits || 0) / 2)}회 분석 가능</span>
+                  </div>
+                  <Plus className="w-3.5 h-3.5 text-klein group-hover:scale-125 transition-transform" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-1">
+                <div className="w-9 h-9 rounded-full bg-klein/10 border border-klein/20 flex items-center justify-center shrink-0 overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-klein text-[12px] font-black">{user.email?.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-gray-800 truncate">{profile?.full_name || user.email?.split('@')[0]}</p>
+                  <p className="text-[11px] text-gray-400 truncate">{user.email}</p>
+                </div>
+                <button 
+                  onClick={onLogout}
+                  className="p-2 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors"
+                  title="로그아웃"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 관리자 전용 링크 (Phase 11) */}
+              {['zeddykeepgoing@gmail.com'].includes(user.email || '') && (
+                <div className="pt-1">
+                  <Link 
+                    href="/admin"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-gray-900 text-white rounded-xl font-bold text-[11px] hover:bg-black transition-all shadow-md shadow-black/10"
+                  >
+                    <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                    관리자 대시보드
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </aside>
     </>

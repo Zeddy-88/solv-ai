@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, Minus, Star, Share2, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Star, Share2, BarChart3, Download, FileText, Loader2 } from 'lucide-react';
 import { AnalysisResult, DiagnosisGrade, Proposal } from '@/lib/types';
 import { ComposedChart, Bar, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import ProposalModal from '@/components/ProposalModal';
+import { generatePDF, exportToCSV } from '@/lib/reportGenerator';
 
 interface DashboardProps {
   id: string | null;
@@ -107,6 +108,24 @@ function ScriptAccordion({ script }: { script: AnalysisResult['scripts'][0] }) {
 export default function Dashboard({ id, data, isFavorite, onToggleFavorite, onReset, onShare }: DashboardProps) {
   const { company, financials, diagnosis, summary, personas, integratedInsight, proposals, scripts } = data;
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setIsExporting(true);
+    try {
+      // PDF 생성을 위한 전체 대시보드 ID를 사용합니다.
+      await generatePDF('analysis-dashboard', `SolvAI_Report_${company.name}`);
+    } catch (error) {
+      alert('PDF 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadCSV = () => {
+    const success = exportToCSV(data, `SolvAI_Data_${company.name}`);
+    if (!success) alert('CSV 내보내기 중 오류가 발생했습니다.');
+  };
 
 
   const handleShare = () => {
@@ -141,8 +160,36 @@ export default function Dashboard({ id, data, isFavorite, onToggleFavorite, onRe
 
   const latestYear = Math.max(...financials.trends.map(t => t.year));
 
+  const [rating, setRating] = useState<number>(0);
+  const [feedback, setFeedback] = useState('');
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  const handleSubmitFeedback = async () => {
+    if (!id || rating === 0) return;
+    
+    setIsSubmittingFeedback(true);
+    try {
+      const response = await fetch(`/api/analyses/${id}/feedback`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating, feedback }),
+      });
+      
+      if (response.ok) {
+        setFeedbackSubmitted(true);
+      } else {
+        alert('피드백 저장 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Feedback submission failed:', error);
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
+
   return (
-    <div className="space-y-6 p-6 md:p-8 animate-slide-up">
+    <div id="analysis-dashboard" className="space-y-6 p-6 md:p-8 animate-slide-up bg-white">
       <div className="space-y-8 bg-[#FFFFFF] p-8 rounded-3xl shadow-sm border border-[#E5E7EB]">
         {/* ── 헤더 ── */}
         <div className="flex items-start gap-4">
@@ -154,9 +201,29 @@ export default function Dashboard({ id, data, isFavorite, onToggleFavorite, onRe
               </h1>
               <div className="flex items-center gap-2 shrink-0">
                 <button
+                  onClick={handleDownloadPDF}
+                  disabled={isExporting}
+                  data-html2canvas-ignore
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#0000001A] bg-white text-[#6B7280] hover:text-klein hover:border-klein/30 transition-all shadow-sm group disabled:opacity-50"
+                  title="PDF 리포트 다운로드"
+                >
+                  {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                  <span className="hidden md:inline text-[13px] font-bold">PDF</span>
+                </button>
+                <button
+                  onClick={handleDownloadCSV}
+                  data-html2canvas-ignore
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#0000001A] bg-white text-[#6B7280] hover:text-green-600 hover:border-green-200 transition-all shadow-sm group"
+                  title="CSV 데이터 실적 다운로드"
+                >
+                  <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="hidden md:inline text-[13px] font-bold">CSV</span>
+                </button>
+                <div className="w-px h-6 bg-gray-200 mx-1 hidden md:block" data-html2canvas-ignore></div>
+                <button
                   onClick={handleShare}
                   data-html2canvas-ignore
-                  className="p-2 rounded-xl border border-[#0000001A] bg-white text-[#9CA3AF] hover:text-[#2563EB] hover:border-[#BFDBFE] transition-all"
+                  className="p-2.5 rounded-xl border border-[#0000001A] bg-white text-[#9CA3AF] hover:text-[#2563EB] hover:border-[#BFDBFE] transition-all shadow-sm"
                   title="분석 결과 공유"
                 >
                   <Share2 className="w-5 h-5" color="#9CA3AF" />
@@ -164,7 +231,7 @@ export default function Dashboard({ id, data, isFavorite, onToggleFavorite, onRe
                 <button
                   onClick={onToggleFavorite}
                   data-html2canvas-ignore
-                  className={`p-2 rounded-xl border transition-all ${isFavorite
+                  className={`p-2.5 rounded-xl border transition-all shadow-sm ${isFavorite
                     ? 'bg-[#FFFBEB] border-[#FEF3C7] text-[#EAB308]'
                     : 'bg-white border-[#0000001A] text-[#D1D5DB] hover:text-[#EAB308]'
                     }`}
@@ -504,13 +571,64 @@ export default function Dashboard({ id, data, isFavorite, onToggleFavorite, onRe
         </div>
       </div>
 
+      {/* ── 분석 결과 평가 (Phase 8 Feedback System) ── */}
+      <div className="mt-12 bg-[#F9FAFB] rounded-3xl p-8 border border-black/5" data-html2canvas-ignore>
+        {!feedbackSubmitted ? (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-[18px] font-black text-[#111827] mb-2">분석 결과가 어떠셨나요?</h2>
+              <p className="text-[13px] text-[#6B7280] font-medium">더 나은 분석을 위해 소중한 의견을 들려주세요.</p>
+            </div>
+            
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className="p-1 transition-transform hover:scale-125"
+                >
+                  <Star 
+                    className={`w-10 h-10 ${rating >= star ? 'fill-[#EAB308] text-[#EAB308]' : 'text-[#D1D5DB]'}`} 
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="max-w-xl mx-auto space-y-4">
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="분석 결과에 대해 아쉬운 점이나 개선할 점이 있다면 자유롭게 적어주세요."
+                className="w-full h-24 p-4 rounded-2xl border border-[#0000001A] bg-white text-[14px] focus:ring-2 focus:ring-klein/20 focus:border-klein outline-none transition-all resize-none"
+              />
+              <button
+                onClick={handleSubmitFeedback}
+                disabled={rating === 0 || isSubmittingFeedback}
+                className="w-full py-4 bg-klein text-white rounded-2xl font-black text-[15px] shadow-lg shadow-klein/20 hover:bg-[#002FA7CC] disabled:opacity-50 disabled:bg-gray-400 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+              >
+                {isSubmittingFeedback && <Loader2 className="w-5 h-5 animate-spin" />}
+                평가 제출하기
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="py-10 text-center animate-fade-in">
+            <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Star className="w-8 h-8 fill-green-500" />
+            </div>
+            <h2 className="text-[20px] font-black text-[#111827] mb-2">소중한 의견 감사합니다!</h2>
+            <p className="text-[14px] text-[#6B7280] font-medium">보내주신 피드백은 분석 엔진 고도화에 큰 도움이 됩니다.</p>
+          </div>
+        )}
+      </div>
+
       <ProposalModal
         proposal={selectedProposal}
         onClose={() => setSelectedProposal(null)}
       />
 
       {/* ── 영업 스크립트 ── (PDF 제외 영역) */}
-      <div className="mt-12">
+      <div className="mt-12" data-html2canvas-ignore>
         <h2 className="text-[16px] font-black text-[#111827] mb-5">영업 현장 브리핑 스크립트</h2>
         <div className="space-y-4">
           {scripts.map(s => <ScriptAccordion key={s.id} script={s} />)}

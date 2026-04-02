@@ -31,6 +31,29 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    const supabase = await createClient();
+    
+    // 1. 유저 인증 확인
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return errorResponse('UNAUTHORIZED', '로그인이 필요합니다.', 401);
+    }
+
+    // 2. 포인트 확인 (1회 분석 = 2포인트 차감)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return errorResponse('PROFILE_NOT_FOUND', '프로필 정보를 찾을 수 없습니다.', 404);
+    }
+
+    if (profile.credits < 2) {
+      return errorResponse('INSUFFICIENT_CREDITS', '잔여 분석 포인트가 부족합니다. (1회 분석: 2P) 충전 후 이용해주세요.', 402);
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -57,11 +80,28 @@ export async function POST(request: NextRequest) {
     // Gemini 3.1 Pro 분석 실행
     const result = await analyzeFinancialPDF(buffer);
 
+    // 3. 포인트 차감 (2포인트)
+    const { error: deductError } = await supabase
+      .from('profiles')
+      .update({ credits: profile.credits - 2 })
+      .eq('id', user.id);
+
+    if (deductError) {
+      console.error('[BE Agent] 포인트 차감 실패:', deductError);
+      // 포인트 차감 실패 시에도 일단 분석 결과는 저장 시도 (관리자 수작업 필요할 수 있음)
+    }
+
+    // 4. 트랜잭션 기록
+    await supabase.from('credit_transactions').insert({
+      user_id: user.id,
+      amount: -2,
+      type: 'USAGE',
+      description: `Analysis: ${result.company.name}`
+    });
+
     // [Phase 4] Supabase 데이터 저장 로직
     let analysisId = null;
     try {
-      const supabase = await createClient();
-      
       // 1. 기업 정보 Upsert (회사명 기준)
       const { data: companyData, error: companyError } = await supabase
         .from('companies')

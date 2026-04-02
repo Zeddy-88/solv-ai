@@ -8,6 +8,8 @@ interface UploadZoneProps {
   onAnalysisSuccess: (data: unknown, meta?: any) => void;
   onAnalysisError: (message: string) => void;
   isAnalyzing: boolean;
+  user: any;
+  onLoginRequired: () => void;
 }
 
 // FE Agent — PDF 드래그앤드롭 업로드 컴포넌트
@@ -16,6 +18,8 @@ export default function UploadZone({
   onAnalysisSuccess,
   onAnalysisError,
   isAnalyzing,
+  user,
+  onLoginRequired,
 }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -141,8 +145,22 @@ export default function UploadZone({
                       ${isAnalyzing ? 'pointer-events-none opacity-70' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => !isAnalyzing && fileInputRef.current?.click()}
+          onDrop={(e) => {
+            if (!user) {
+              e.preventDefault();
+              onLoginRequired();
+              return;
+            }
+            handleDrop(e);
+          }}
+          onClick={() => {
+            if (isAnalyzing) return;
+            if (!user) {
+              onLoginRequired();
+              return;
+            }
+            fileInputRef.current?.click();
+          }}
         >
           <input
             ref={fileInputRef}

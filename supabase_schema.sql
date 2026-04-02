@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS public.analyses (
   company_name TEXT NOT NULL, -- 검색 최적화용 역정규화
   result_json JSONB NOT NULL, -- AnalysisResult 전문 저장
   is_favorite BOOLEAN DEFAULT false,
+  rating INT CHECK (rating >= 1 AND rating <= 5), -- 사용자 별점 (1-5)
+  feedback TEXT, -- 사용자 정성 피드백
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
