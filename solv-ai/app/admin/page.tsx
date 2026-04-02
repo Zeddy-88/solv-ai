@@ -24,6 +24,14 @@ interface Stats {
   totalUsers: number;
 }
 
+interface UserSearch {
+  email: string;
+  amount: number;
+  description: string;
+  status: 'idle' | 'loading' | 'success' | 'error';
+  message?: string;
+}
+
 interface RecentAnalysis {
   id: string;
   company_name: string;
@@ -53,6 +61,12 @@ export default function AdminPage() {
   });
   const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [grantForm, setGrantForm] = useState<UserSearch>({
+    email: '',
+    amount: 10,
+    description: '이벤트/특별 지급 포인트',
+    status: 'idle'
+  });
   const supabase = createClient();
 
   useEffect(() => {
@@ -104,6 +118,35 @@ export default function AdminPage() {
       console.error('Admin Data Fetch Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGrantSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGrantForm(prev => ({ ...prev, status: 'loading' }));
+    
+    try {
+      const res = await fetch('/api/admin/grant-points', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetEmail: grantForm.email,
+          amount: grantForm.amount,
+          description: grantForm.description
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setGrantForm(prev => ({ ...prev, status: 'success', message: data.message }));
+        fetchAdminData(); // 데이터 새로고침
+        setTimeout(() => setGrantForm(prev => ({ ...prev, status: 'idle', message: '' })), 3000);
+      } else {
+        setGrantForm(prev => ({ ...prev, status: 'error', message: data.error }));
+      }
+    } catch (err) {
+      setGrantForm(prev => ({ ...prev, status: 'error', message: 'API 통신 오류' }));
     }
   };
 
@@ -166,6 +209,61 @@ export default function AdminPage() {
             subValue="누적 기준"
             color="emerald"
           />
+        </div>
+
+        {/* [Phase 11.4] 포인트 수동 지급 관리 도구 */}
+        <div className="bg-white rounded-[32px] border-2 border-klein/10 p-8 mb-10 shadow-lg shadow-klein/5">
+          <div className="flex flex-col md:flex-row md:items-center gap-8">
+            <div className="flex-1">
+              <h3 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-klein fill-klein" />
+                사용자 포인트 수동 지급
+              </h3>
+              <p className="text-gray-500 text-sm font-medium">관리자 권한으로 특정 사용자(이메일 기준)에게 보너스 또는 보상 포인트를 부여합니다.</p>
+            </div>
+            
+            <form onSubmit={handleGrantSubmit} className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">사용자 이메일</label>
+                <input 
+                  type="email"
+                  required
+                  placeholder="user@example.com"
+                  value={grantForm.email}
+                  onChange={e => setGrantForm(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-[14px] font-bold focus:outline-none focus:ring-2 focus:ring-klein/20 transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">지급 포인트 (P)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="number"
+                    required
+                    value={grantForm.amount}
+                    onChange={e => setGrantForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-[14px] font-bold focus:outline-none focus:ring-2 focus:ring-klein/20 transition-all"
+                  />
+                  <button 
+                    disabled={grantForm.status === 'loading'}
+                    className={`px-6 rounded-xl font-black text-[14px] transition-all flex items-center gap-2 ${
+                      grantForm.status === 'loading' ? 'bg-gray-100 text-gray-400' : 
+                      grantForm.status === 'success' ? 'bg-emerald-500 text-white' : 'bg-klein text-white hover:bg-black active:scale-95'
+                    }`}
+                  >
+                    {grantForm.status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : '포인트 지급'}
+                  </button>
+                </div>
+              </div>
+              {grantForm.message && (
+                <div className={`col-span-1 md:col-span-2 text-[12px] font-bold px-4 py-2 rounded-lg mt-2 ${
+                  grantForm.status === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                }`}>
+                  {grantForm.message}
+                </div>
+              )}
+            </form>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
