@@ -6,3 +6,5 @@ solv-ai/build/
 .DS_Store
 *.log
 
+.vercel
+.env*.local
