@@ -1,13 +1,18 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Phase 11: Next.js 16 마이그레이션 — middleware -> proxy 컨벤션 적용
+// Phase 11: Next.js 16 마기그레이션 — middleware 표준이 proxy로 변경됨
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
+
+  // 환경 변수 누락 시 미들웨어 중단 방지 (404 방어)
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
